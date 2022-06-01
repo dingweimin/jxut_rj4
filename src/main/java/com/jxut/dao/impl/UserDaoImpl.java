@@ -4,10 +4,12 @@ import com.jxut.dao.UserDao;
 import com.jxut.model.PageUtil;
 import com.jxut.model.User;
 import com.jxut.util.DbUtil;
+import com.mysql.cj.util.StringUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: WeiMin
@@ -30,8 +32,8 @@ public class UserDaoImpl implements UserDao {
             psmt =conn.prepareStatement(sql.toString());
             psmt.setString(1, user.getUserName());
             psmt.setString(2, user.getPassword());
-            rs= psmt.executeQuery();
-            while (rs.next()){
+            rs= psmt.executeQuery();//执行查询操作
+            while (rs.next()){//遍历结果集
                 u = new User();
                 u.setId(rs.getInt(1));
                 u.setUserName(rs.getString(2));
@@ -55,7 +57,7 @@ public class UserDaoImpl implements UserDao {
 获取全部用户
  */
     @Override
-    public List<User> getAll(PageUtil page) {
+    public List<User> getAll(PageUtil page, Map map) {
         User u = null;
         List<User> users =new ArrayList<User>();
         Connection conn = null;
@@ -63,13 +65,19 @@ public class UserDaoImpl implements UserDao {
         PreparedStatement psmt = null;
         StringBuffer sql = new StringBuffer();
         try {
-            sql.append("select * from t4_user");
+            sql.append("select * from t4_user where 1=1 ");
+            if(!StringUtils.isNullOrEmpty((String) map.get("realName"))){//数值不为空时，加入查询条件。判定用户是否输入了查询条件
+                sql.append("and realName like ?");//模糊查询
+            }
             sql.append(" limit ?,?");
             conn = DbUtil.getConnection();
             psmt =conn.prepareStatement(sql.toString());
-
-            psmt.setInt(1, (page.getCurrentPage()-1)*page.getPageSize());
-            psmt.setInt(2, page.getPageSize());
+            int i =1;//设置动态参数，有查询条件时，第一个参数为查询条件，递增++
+            if(!StringUtils.isNullOrEmpty((String) map.get("realName"))){
+                psmt.setString(i++,"%"+map.get("realName").toString()+"%");
+            }
+            psmt.setInt(i++,(page.getCurrentPage()-1)*page.getPageSize());
+            psmt.setInt(i, page.getPageSize());
             rs= psmt.executeQuery();
             while (rs.next()){
                 u = new User();
@@ -117,7 +125,7 @@ public class UserDaoImpl implements UserDao {
             psmt.setString(8, user.getType());
             psmt.setString(9, user.getPic());
             psmt.executeUpdate();
-    ruselt = true;
+             ruselt = true;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -184,18 +192,26 @@ public class UserDaoImpl implements UserDao {
 
         return u;
     }
-
+/*
+计算用户数
+ */
     @Override
-    public int getAllCount() {
+    public int getAllCount(Map map) {
        int count = 0;
         Connection conn = null;
         ResultSet rs =null;
         PreparedStatement psmt = null;
         StringBuffer sql = new StringBuffer();
         try {
-            sql.append("select count(*) from t4_user");
+            sql.append("select count(*) from t4_user where 1=1 ");
+            if(!StringUtils.isNullOrEmpty((String) map.get("realName"))){
+                sql.append("and realName like ?");
+            }
             conn = DbUtil.getConnection();
             psmt =conn.prepareStatement(sql.toString());
+            if(!StringUtils.isNullOrEmpty((String) map.get("realName"))){
+                psmt.setString(1,"%"+map.get("realName").toString()+"%");
+            }
             rs= psmt.executeQuery();
             while (rs.next()){
                 count = rs.getInt(1);

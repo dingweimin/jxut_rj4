@@ -22,7 +22,9 @@ import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.*;
 import java.sql.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name= "UserServlet" ,value="/UserServlet" )
 public class UserServlet extends HttpServlet {
@@ -36,26 +38,27 @@ public class UserServlet extends HttpServlet {
        //解决中文乱码
         request.setCharacterEncoding("utf-8");
         response.setCharacterEncoding("utf-8");
+        response.setContentType("text/plain;charset=utf-8");//设置相应类型为html,编码为utf-8
         String method = request.getParameter("method");
         if("login".equals(method)){
-            login(request,response);
+            login(request,response);//登录
         }else if("logout".equals(method)){
-            logout(request,response);
+            logout(request,response);//登出
         }else if ("getAll".equals(method)) {
-            getAll(request,response);
+            getAll(request,response);//用户管理/获取全部用户
         }else if("getUserById".equals(method)){
-            getUserById(request,response);
+            getUserById(request,response);//查看用户信息
         }
         else if ("preUser".equals(method)) {
-            preUser(request,response);
+            preUser(request,response);//添加用户前的准备
         }else if ("addUser".equals(method)) {
-            addUser(request,response);
+            addUser(request,response);//添加用户
         }else if ("deleteUser".equals(method)) {
-            deleteUser(request, response);
+            deleteUser(request, response);//删除用户
         }else if ("updateUser".equals(method)) {
-            updateUser(request, response);
+            updateUser(request, response);//修改用户信息
         }else if("userAddO".equals(method)){
-            userAddO(request, response);
+            userAddO(request, response);//添加用户+头像上传
         }else if("title_download".equals(method)) {
             title_download(request, response);
         }
@@ -97,13 +100,13 @@ public class UserServlet extends HttpServlet {
                        user.setType(item.getString("utf-8"));
                    }
                 }else {
-                    //文件域
+                    //文件域，获取文件名
                     String fileName = item.getName();
                     System.out.println(fileName);
-                    // 获取文件名后缀
+                    // 获取文件名后缀，以最后一个.为标识
                         String fileType = fileName.substring(fileName.lastIndexOf("."));
                     System.out.println(fileName.lastIndexOf("."));
-                    //获取毫秒数 从1970年1月1日0时0分0秒开始到现在的毫秒数
+                    //获取毫秒数 从1970年1月1日0时0分0秒开始到现在的毫秒数，以此分辨文件的唯一性
                     long time = System.currentTimeMillis();
                     //指定文件目录
                     String path = this.getServletContext().getRealPath("/upload/userHb/");
@@ -112,14 +115,14 @@ public class UserServlet extends HttpServlet {
                     if (!file.exists()) {
                         file.mkdirs();
                     }
-                    //创建复制后的文件
+                    //创建复制后的文件保存
                     File newFile = new File(path, user.getUserName()+time + fileType);
                     try {
-                        item.write(newFile);
+                        item.write(newFile);//写入文件
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    user.setPic("upload/userHb/" +user.getUserName()+ time + fileType);
+                    user.setPic("upload/userHb/" +user.getUserName()+ time + fileType);//夹件夹+用户名+时间+文件后缀
                 }
             }
             UserDao userDao = new UserDaoImpl();
@@ -190,22 +193,27 @@ public class UserServlet extends HttpServlet {
     }
         protected void getAll(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
             PageUtil page = new PageUtil();
-        String p = request.getParameter("pageNo");//getParamter('page'),page为空也可以，可以再做后续判断
-            int currentPage = 1;
+            Map map = new HashMap();
+            String p = request.getParameter("pageNo");//getParamter('pageNo'),为空也可以，可以再做后续判断
+            String realName = request.getParameter("realName");
+            map.put("realName",realName);
+            int currentPage = 1; //pageNo为空时，默认为1
             if(!StringUtils.isNullOrEmpty(p)) {  //如果page不为空，则赋值给currentPage
-                currentPage = Integer.parseInt(p);
               currentPage = Integer.parseInt(p);
             }
                UserDao userDao = new UserDaoImpl();
-            page.setCurrentPage(currentPage);
-            page.setPageSize(10);
-            page.setTotalSize(userDao.getAllCount());
+            page.setPageSize(8);
+            page.setTotalSize(userDao.getAllCount(map));
             page.setTotalPage();
-            System.out.println(page.getTotalPage());
-            List<User> users = userDao.getAll(page);
+            if (currentPage > page.getTotalPage()) {
+                currentPage =1;//如果当前页大于总页数，则跳转到第一页，模糊查询时
+            }
+            page.setCurrentPage(currentPage);
+            List<User> users = userDao.getAll(page,map);
             request.setAttribute("users",users);
             request.setAttribute("page",page);
-               request.getRequestDispatcher("userList.jsp").forward(request, response);
+            request.setAttribute("realName",realName);
+            request.getRequestDispatcher("userList.jsp").forward(request, response);
 
     }
         protected void logout(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -222,6 +230,7 @@ public class UserServlet extends HttpServlet {
         user.setUserName(userName);
         user.setPassword(password);
         User u=dao.login(user);
+
         if( u!=null){
             HttpSession session = request.getSession();
             session.setAttribute("loginValue",u);
@@ -229,6 +238,7 @@ public class UserServlet extends HttpServlet {
         }else {
             response.sendRedirect("login.jsp");
         }
+
     }
 
 

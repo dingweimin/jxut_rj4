@@ -12,13 +12,13 @@ public class User {
     private String userName;//用户名
     private String realName;//真实姓名
     private String password;//密码
-    private String sex;//性别
+    private String sex;//性别 1男性 2女性
     private Date  birthday;//出生日期
     private String tel;//电话号码
     private String address;//用户地址
-    private String type;//用户类型
+    private String type;//用户类型 1学员 2教师 3管理员
     private String pic;//图像地址
-    private String if_valid;//是否有效
+    private String if_valid;//是否有效 1有效 0无效 默认为1
 
     public int getId() {
         return id;

@@ -70,6 +70,7 @@ public class Test1 {
                             user.setTel(RollValue.createMobile(1));
                             user.setAddress(RollValue.getRoad());
                             user.setType("1");
+                            user.setPic("/upload/userHb/user81654063330195.jpg");
                             userDao.addUser(user);
                         }
                     }
