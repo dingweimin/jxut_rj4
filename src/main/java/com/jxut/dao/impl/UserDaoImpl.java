@@ -192,9 +192,37 @@ public class UserDaoImpl implements UserDao {
 
         return u;
     }
-/*
-计算用户数
- */
+
+    @Override
+    public boolean updateUser(User user) {
+        boolean ruselt = false; //返回值
+        User u = null;
+        Connection conn = null;
+        ResultSet rs =null;
+        PreparedStatement psmt = null;
+        StringBuffer sql = new StringBuffer();
+        try {
+            sql.append("update t4_user set realName=?,sex=?,birthday=?,tel=?,address=?,type=? where id=?");
+            conn = DbUtil.getConnection();
+            psmt =conn.prepareStatement(sql.toString());
+            psmt.setString(1,user.getRealName());
+            psmt.setString(2,user.getSex());
+            psmt.setDate(3,(Date) user.getBirthday());
+            psmt.setString(4,user.getTel());
+            psmt.setString(5,user.getAddress());
+            psmt.setString(6,user.getType());
+            psmt.setInt(7 ,user.getId());
+            psmt.executeUpdate();
+            ruselt = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ruselt;
+    }
+
+    /*
+    计算用户数
+     */
     @Override
     public int getAllCount(Map map) {
        int count = 0;

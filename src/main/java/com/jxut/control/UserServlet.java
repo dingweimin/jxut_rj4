@@ -142,8 +142,17 @@ public class UserServlet extends HttpServlet {
         int id = Integer.parseInt(request.getParameter("id"));
         UserDao userDao = new UserDaoImpl();
         User user = userDao.queryUserById(id);
+        TypeDao typeDao = new TypeDaoImpl();
+        List<Type> types = typeDao.getType();
+        request.setAttribute("types",types);
         request.setAttribute("user",user);
-        request.getRequestDispatcher("userView.jsp").forward(request,response);
+        //转发到查看用户信息页面或者修改用户信息页面
+        if("update".equals(request.getParameter("tiaozhuan"))){
+            request.getRequestDispatcher("userUpdate.jsp").forward(request,response);
+        }else if("view".equals(request.getParameter("tiaozhuan"))){
+                request.getRequestDispatcher("userView.jsp").forward(request,response);
+            }
+
     }
         protected void deleteUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
@@ -156,6 +165,27 @@ public class UserServlet extends HttpServlet {
         }
     }
     protected void updateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int id =Integer.parseInt(request.getParameter("id")) ;
+        String realName = request.getParameter("realName");
+        String  sex =request.getParameter("sex");
+        String tel =request.getParameter("tel");
+        Date birthday= Date.valueOf(request.getParameter("birthday"));
+        String address = request.getParameter("userAddress");
+        String type = request.getParameter("type");
+
+        UserDao userDao = new UserDaoImpl();
+        User user = new User();
+        user.setRealName(realName);
+        user.setSex(sex);
+        user.setBirthday(birthday);
+        user.setTel(tel);
+        user.setAddress(address);
+        user.setType(type);
+        user.setId(id);
+       userDao.updateUser(user);
+        response.sendRedirect("UserServlet?method=getAll");
+
+
     }
         protected void addUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
        String username = request.getParameter("userId");
@@ -193,6 +223,7 @@ public class UserServlet extends HttpServlet {
     }
         protected void getAll(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
             PageUtil page = new PageUtil();
+            PrintWriter out = response.getWriter();
             Map map = new HashMap();
             String p = request.getParameter("pageNo");//getParamter('pageNo'),为空也可以，可以再做后续判断
             String realName = request.getParameter("realName");
@@ -235,8 +266,10 @@ public class UserServlet extends HttpServlet {
             HttpSession session = request.getSession();
             session.setAttribute("loginValue",u);
             response.sendRedirect("index.jsp");
+            request.setAttribute("msg","登录成功");
         }else {
             response.sendRedirect("login.jsp");
+            request.setAttribute("msg","登录失败，请检查用户名或密码");
         }
 
     }

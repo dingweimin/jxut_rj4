@@ -56,8 +56,8 @@
                     <a href="${user.pic}" target="_blank">下载图像</a>
                 </td>
                 <td>
-                    <a href="UserServlet?method=getUserById&id=${user.id}"><img src="img/read.png" alt="查看" title="查看"/></a>
-                    <a href="userUpdate.html"><img src="img/xiugai.png" alt="修改" title="修改"/></a>
+                    <a href="UserServlet?method=getUserById&id=${user.id}&tiaozhuan=view"><img src="img/read.png" alt="查看" title="查看"/></a>
+                    <a href="UserServlet?method=getUserById&id=${user.id}&tiaozhuan=update"><img src="img/xiugai.png" alt="修改" title="修改"/></a>
                     <a href="UserServlet?method=deleteUser&id=${user.id} " onclick="return confirm('你确定要删除嘛？')" class="removeUser"><img src="img/schu.png" alt="删除" title="删除"/></a>
                 </td>
             </tr>

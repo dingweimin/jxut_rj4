@@ -16,5 +16,6 @@ public interface UserDao {
     public boolean addUser(User user);
     public boolean deleteUserByid(int id);
     public User queryUserById(int id);
+    public boolean updateUser(User user);
     public int getAllCount(Map map);
 }
